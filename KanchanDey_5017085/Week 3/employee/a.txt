@@ -1,0 +1,646 @@
+package com.employeemanagementsystem;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+
+@SpringBootApplication
+@EnableJpaAuditing
+public class EmployeeApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(EmployeeApplication.class, args);
+	}
+
+}
+package com.employeemanagementsystem.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.data.domain.AuditorAware;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+
+@Configuration
+@EnableJpaAuditing
+public class AuditingConfig {
+    @Bean
+    AuditorAware<String> auditorProvider(){
+        return new AuditorAwareImpl();
+    }
+}
+package com.employeemanagementsystem.config;
+
+import java.util.Optional;
+
+import org.springframework.data.domain.AuditorAware;
+import org.springframework.lang.NonNull;
+
+public class AuditorAwareImpl implements AuditorAware<String> {
+
+    @Override
+    @NonNull
+    public Optional<String> getCurrentAuditor(){
+        return Optional.ofNullable("System");
+    }
+}
+package com.employeemanagementsystem.config;
+
+import javax.sql.DataSource;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+
+@Configuration
+public class H2DataSourceConfiguration {
+    
+    @ConfigurationProperties("spring.datasource.h2")
+    @Bean
+    public DataSourceProperties h2DataSourceProperties(){
+        return new DataSourceProperties();
+    }
+    @Primary
+    @Bean
+    public DataSource h2DataSource(){
+        return h2DataSourceProperties().initializeDataSourceBuilder().build();
+    }
+}
+// package com.employeemanagementsystem.config;
+
+// import javax.sql.DataSource;
+
+// import org.springframework.beans.factory.annotation.Autowired;
+// import org.springframework.beans.factory.annotation.Qualifier;
+// import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
+// import org.springframework.context.annotation.Bean;
+// import org.springframework.context.annotation.Configuration;
+// import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+// import org.springframework.orm.jpa.JpaTransactionManager;
+// import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+// import org.springframework.transaction.PlatformTransactionManager;
+
+// @Configuration
+// @EnableJpaRepositories(
+//     basePackages = "com.employeemanagementsystem.employeeRepo, com.employeemanagementsystem.departmentRepo",
+//     entityManagerFactoryRef = "h2EntityManagerFactoryBean",
+//     transactionManagerRef = "h2TransactionManager"
+// )
+// public class h2JpaConfiguration {
+    
+//     @Bean
+//     LocalContainerEntityManagerFactoryBean h2EntityManagerFactoryBean(@Autowired EntityManagerFactoryBuilder entityManagerFactoryBuilder, @Qualifier("h2DataSource") DataSource dataSource){
+//         return entityManagerFactoryBuilder
+//         .dataSource(dataSource)
+//         .packages("com.employeemanagementsystem.employeeEntity, com.employeemanagementsystem.departmentEntity")
+//         .build();
+//     }
+//     @Bean
+//     PlatformTransactionManager h2TransactionManager(@Qualifier("h2EntityManagerFactoryBean") LocalContainerEntityManagerFactoryBean emfb){
+//         return new JpaTransactionManager(emfb.getObject());
+//     }
+// }
+package com.employeemanagementsystem.config;
+
+import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
+import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.orm.jpa.JpaVendorAdapter;
+import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
+
+@Configuration
+public class JpaConfig {
+    
+    @Bean
+    public JpaVendorAdapter jpaVendorAdapter() {
+        return new HibernateJpaVendorAdapter();
+  
+    }
+    @Bean
+    public EntityManagerFactoryBuilder entityManagerFactoryBuilder(JpaVendorAdapter jpaVendorAdapter, JpaProperties jpaProperties) {
+        return new EntityManagerFactoryBuilder(jpaVendorAdapter, jpaProperties.getProperties(), null);
+    }
+}
+package com.employeemanagementsystem.config;
+
+import javax.sql.DataSource;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class MySqlDataSourceConfiguration {
+    
+    @ConfigurationProperties("spring.datasource.mysql")
+    @Bean
+    DataSourceProperties mysqlDataSourceProperties(){
+        return new DataSourceProperties();
+    }
+    @Bean
+    DataSource mysqlDataSource(){
+        return mysqlDataSourceProperties().initializeDataSourceBuilder().build();
+    }
+}
+// package com.employeemanagementsystem.config;
+
+// import javax.sql.DataSource;
+// import org.springframework.beans.factory.annotation.Qualifier;
+// import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
+// import org.springframework.context.annotation.Bean;
+// import org.springframework.context.annotation.Configuration;
+// import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+// import org.springframework.orm.jpa.JpaTransactionManager;
+// import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+// import org.springframework.transaction.PlatformTransactionManager;
+
+// @Configuration
+// @EnableJpaRepositories(
+//     basePackages = "com.employeemanagementsystem.departmentRepo, com.employeemanagementsystem.employeeRepo",
+//     entityManagerFactoryRef = "mysqlEntityManagerFactoryBean",
+//     transactionManagerRef = "mysqlTransactionManager"
+// )
+// public class MySqlJpaConfiguration {
+    
+//     @Bean
+//     LocalContainerEntityManagerFactoryBean mysqlEntityManagerFactoryBean(EntityManagerFactoryBuilder entityManagerFactoryBuilder, @Qualifier("mysqlDataSource") DataSource dataSource){
+//         return entityManagerFactoryBuilder
+//         .dataSource(dataSource)
+//         .packages("com.employeemanagementsystem.departmentEntity, com.employeemanagementsystem.employeeEntity")
+//         .build();
+//     }
+
+//     @Bean
+//     PlatformTransactionManager mysqlTransactionManager(@Qualifier("mysqlEntityManagerFactoryBean") LocalContainerEntityManagerFactoryBean emfb){
+//         return new JpaTransactionManager(emfb.getObject());
+//     }
+// }
+package com.employeemanagementsystem.controller;
+
+import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import com.employeemanagementsystem.dto.DepartmentDTO;
+import com.employeemanagementsystem.entity.Department;
+import com.employeemanagementsystem.projection.DepartmentProjection;
+import com.employeemanagementsystem.service.DepartmentService;
+
+@RestController
+@RequestMapping("/api/departments")
+public class DepartmentController {
+    @Autowired
+    private DepartmentService departmentService;
+    // Start of DTO and Projections controlled by GetMapping
+    @GetMapping
+    public List<DepartmentProjection> getAllDepartments(){
+        return departmentService.getAllDepartments();
+    }
+    @GetMapping("/{id}")
+    public DepartmentProjection getDeptById(@PathVariable Long id){
+        return departmentService.getDeptById(id);
+    }
+    @GetMapping("/name/{name}")
+    public DepartmentDTO getDepartmentByName(@PathVariable String name){
+        return departmentService.getDepartmentByName(name);
+    }
+    // End of DTO and Projections controlled by GetMapping
+    
+    public Department getDepartmentById(@PathVariable Long id){
+        return departmentService.getDepartmentById(id);
+    }
+    @PostMapping
+    public Department createDepartment(@RequestBody Department department){
+        return departmentService.saveDepartment(department);
+    }
+    @PutMapping("/{id}")
+    public Department updateDepartment(@PathVariable Long id, @RequestBody Department departmentDetails){
+        Department department=departmentService.getDepartmentById(id);
+        if(department!=null){
+            department.setEmployees(departmentDetails.getEmployees());
+            department.setName(departmentDetails.getName());
+            return departmentService.saveDepartment(department);
+        }
+        return null;
+    }
+    @DeleteMapping("/{id}")
+    public void deleteDepartment(@PathVariable Long id){
+        departmentService.deleteDepartment(id);
+    }
+}
+package com.employeemanagementsystem.controller;
+
+import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.employeemanagementsystem.dto.EmployeeDTO;
+import com.employeemanagementsystem.entity.Employee;
+import com.employeemanagementsystem.projection.EmployeeProjection;
+import com.employeemanagementsystem.service.EmployeeService;
+
+@RestController
+@RequestMapping("/api/employees")
+public class EmployeeController {
+    @Autowired
+    private EmployeeService employeeService;
+
+    @GetMapping
+    public Page<EmployeeDTO> getAllEmployees(@RequestParam(defaultValue = "0")int page, @RequestParam(defaultValue = "10")int size, @RequestParam(defaultValue = "id")String sortBy){
+        Pageable pageable=PageRequest.of(page,size, Sort.by(sortBy));
+        return employeeService.getAllEmployees(pageable);
+    }
+    @GetMapping("/sorted")
+    public Page<EmployeeDTO> getAllEmployeesSorted(@RequestParam(defaultValue = "0")int page,@RequestParam(defaultValue = "10")int size,@RequestParam(defaultValue = "id,asc")String[]sort){
+        Sort.Direction direction=sort[1].equalsIgnoreCase("desc")? Sort.Direction.DESC:Sort.Direction.ASC;
+        Pageable pageable=PageRequest.of(page, size,Sort.by(direction,sort[0]));
+        return employeeService.getAllEmployees(pageable);
+    }
+    @GetMapping("/{id}")
+    public EmployeeProjection getEmpById(@PathVariable Long id){
+        return employeeService.getEmpById(id);
+    }
+    @GetMapping("/name/{name}")
+    public List<EmployeeProjection> getEmployeeByName(@PathVariable String name){
+        return employeeService.findByName(name);
+    }
+    @GetMapping("/email/{email}")
+    public List<EmployeeProjection> getEmployeeByEmail(@PathVariable String email){
+        return employeeService.findByEmail(email);
+    }
+    public Employee getEmployeeById(@PathVariable Long id){
+        return employeeService.getEmployeeById(id);
+    }
+    @PostMapping
+    public Employee createEmployee(@RequestBody Employee employee){
+        return employeeService.saveEmployee(employee);
+    }
+    @PutMapping("/{id}")
+    public Employee updateEmployee(@PathVariable Long id, @RequestBody Employee employeeDetails){
+        Employee employee=employeeService.getEmployeeById(id);
+        if(employee!=null){
+            employee.setName(employeeDetails.getName());
+            employee.setEmail(employeeDetails.getEmail());
+            employee.setDepartment(employeeDetails.getDepartment());
+            return employeeService.saveEmployee(employee);
+        }
+        return null;
+    }
+    @DeleteMapping("/{id}")
+    public void deleteEmployee(@PathVariable Long id){
+        Employee employee=employeeService.getEmployeeById(id);
+        if(employee!=null){
+            employeeService.deleteEmployee(id);
+        }
+    }
+}
+package com.employeemanagementsystem.dto;
+
+import java.util.List;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@Getter
+@AllArgsConstructor
+public class DepartmentDTO {
+    private long id;
+    private String name;
+    private int employeeCount;
+    private List<EmployeeDTO> employees;
+}
+package com.employeemanagementsystem.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@Getter
+@AllArgsConstructor
+public class EmployeeDTO {
+    private long id;
+    private String name;
+    private String email;
+    private String departmentName;
+}
+package com.employeemanagementsystem.entity;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import org.springframework.data.annotation.*;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.NamedQueries;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Entity
+@Table(name="departments")
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@EntityListeners(AuditingEntityListener.class)
+@NamedQueries({
+    @NamedQuery(
+        name="Department.findByName",
+        query="SELECT d FROM Department d WHERE d.name=:name"
+    )
+})
+public class Department {
+    
+    @Id
+    @GeneratedValue
+    private Long id;
+    private String name;
+    @OneToMany(mappedBy = "department")
+    private List<Employee> employees;
+
+    @CreatedBy
+    private String createdBy;
+    @CreatedDate
+    private LocalDateTime createdDate;
+    @LastModifiedBy
+    private String lastModifiedBy;
+    @LastModifiedDate
+    private LocalDateTime lastModifiedDate;
+}
+package com.employeemanagementsystem.entity;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedQueries;
+import jakarta.persistence.NamedQuery;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.springframework.data.annotation.*;
+
+
+@Entity
+@Table(name="employees")
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@EntityListeners(AuditingEntityListener.class)
+@NamedQueries({
+    @NamedQuery(
+        name="Employee.findByName",
+        query="SELECT e FROM Employee e WHERE e.name=:name"
+    ),
+    @NamedQuery(
+        name="Employee.findByEmail",
+        query = "SELECT e FROM Employee e WHERE e.email=:email"
+    )
+})
+public class Employee {
+    @Id
+    @GeneratedValue
+    private Long id;
+    private String name;
+    private String email;
+
+    @ManyToOne
+    @JoinColumn(name="department_id")
+    private Department department;
+
+    @CreatedBy
+    private String createdBy;
+    @CreatedDate
+    private LocalDateTime createdDate;
+    @LastModifiedBy
+    private String lastModifiedBy;
+    @LastModifiedDate
+    private LocalDateTime lastModifiedDate;
+}
+package com.employeemanagementsystem.projection;
+
+import org.springframework.beans.factory.annotation.Value;
+
+public interface DepartmentProjection {
+    @Value("#{target.id}")
+    long getId();
+    @Value("#{target.name}")
+    String getName();
+    @Value("#{target.employees.size()}")
+    int getEmployeeCount();
+}
+package com.employeemanagementsystem.projection;
+
+import org.springframework.beans.factory.annotation.Value;
+
+public interface EmployeeProjection {
+    @Value("#{target.id}")
+    long getId();
+    @Value("#{target.name}")
+    String getName();
+    @Value("#{target.email}")
+    String getEmail();
+    @Value("#{target.department.name}")
+    String getDepartmentName();
+}
+package com.employeemanagementsystem.repo;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+import com.employeemanagementsystem.entity.Department;
+import com.employeemanagementsystem.projection.DepartmentProjection;
+import java.util.List;
+
+
+
+@Repository
+public interface DepartmentRepository extends JpaRepository<Department,Long> {
+    
+    // Using Interface Based Projection
+    @Query("SELECT d FROM Department d")
+    List<DepartmentProjection> findAllDepartments();
+    
+    // Named Query
+    @Query(name="Department.findByName")
+    DepartmentProjection findDepartmentByName(@Param("name") String name);
+    
+    // Custom Query
+    @Query("SELECT d FROM Department d WHERE d.id=:id")
+    DepartmentProjection findDepartmentById(Long id);
+    // End Of Interface Based Projection
+}
+package com.employeemanagementsystem.repo;
+
+import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+import com.employeemanagementsystem.dto.EmployeeDTO;
+import com.employeemanagementsystem.entity.Employee;
+import com.employeemanagementsystem.projection.EmployeeProjection;
+
+@Repository
+public interface EmployeeRepository extends JpaRepository<Employee,Long>{
+
+    List<Employee> findByDepartmentId(Long departmentID);
+    
+    // Custom Query Methods
+    @Query(name="Employee.findByEmail")
+    List<EmployeeProjection> findByEmail(@Param("email") String email);
+    @Query(name="Employee.findByName")
+    List<EmployeeProjection> findByName(@Param("name") String name);
+
+    // Projection using DTO Class
+    // @Query("SELECT new com.employeemanagementsystem.dto.EmployeeDTO(e.id,e.name,e.email,e.department.name) FROM Employee e")
+    // List<EmployeeDTO> findAllEmployees();
+    // Projection using Interface
+    @Query("SELECT e FROM Employee e WHERE e.id=:id")
+    EmployeeProjection findEmpById(Long id);
+
+    // Using Pageable
+    @SuppressWarnings("null")
+    @Query("SELECT new com.employeemanagementsystem.dto.EmployeeDTO(e.id,e.name,e.email,e.department.name) FROM Employee e")
+    Page<EmployeeDTO> findAll(Pageable pageable);
+}
+package com.employeemanagementsystem.service;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.employeemanagementsystem.dto.DepartmentDTO;
+import com.employeemanagementsystem.dto.EmployeeDTO;
+import com.employeemanagementsystem.entity.Department;
+import com.employeemanagementsystem.entity.Employee;
+import com.employeemanagementsystem.projection.DepartmentProjection;
+import com.employeemanagementsystem.repo.DepartmentRepository;
+import com.employeemanagementsystem.repo.EmployeeRepository;
+
+@Service
+public class DepartmentService {
+    @Autowired
+    private DepartmentRepository departmentRepository;
+    @Autowired
+    private EmployeeRepository employeeRepository;
+
+    // DTO and Projections
+    public List<DepartmentProjection> getAllDepartments(){
+        return departmentRepository.findAllDepartments();
+    }
+    public DepartmentProjection getDeptById(Long id){
+        return departmentRepository.findDepartmentById(id);
+    }
+    // Using DTO employee data is shown
+    public DepartmentDTO getDepartmentByName(String name){
+        DepartmentProjection dp= departmentRepository.findDepartmentByName(name);
+        if(dp==null)
+            return null;
+        List<Employee> employees=employeeRepository.findByDepartmentId(dp.getId());
+        List<EmployeeDTO> employeeDTOs=employees.stream().map(e->new EmployeeDTO(e.getId(),e.getName(),null,null)).collect(Collectors.toList());
+        return new DepartmentDTO(dp.getId(), dp.getName(), dp.getEmployeeCount(),employeeDTOs);
+    }
+    // DTO and Projections end
+
+    public Department getDepartmentById(Long id){
+        return departmentRepository.findById(id).orElse(null);
+    }
+    public Department saveDepartment(Department department){
+        return departmentRepository.save(department);
+    }
+    public void deleteDepartment(Long id){
+        departmentRepository.deleteById(id);
+    }
+}
+package com.employeemanagementsystem.service;
+
+import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
+import com.employeemanagementsystem.dto.EmployeeDTO;
+import com.employeemanagementsystem.entity.Employee;
+import com.employeemanagementsystem.projection.EmployeeProjection;
+import com.employeemanagementsystem.repo.EmployeeRepository;
+
+import lombok.NonNull;
+
+@Service
+public class EmployeeService {
+    @Autowired
+    private EmployeeRepository employeeRepository;
+
+    @NonNull
+    public Page<EmployeeDTO> getAllEmployees(Pageable pageable){
+        return employeeRepository.findAll(pageable);
+    }
+    // START OF PROJECTIONS
+    public EmployeeProjection getEmpById(Long id){
+        return employeeRepository.findEmpById(id);
+    }
+    public List<EmployeeProjection> findByEmail(String email){
+        return employeeRepository.findByEmail(email);
+    }
+    public List<EmployeeProjection> findByName(String name){
+        return employeeRepository.findByName(name);
+    }
+    // END OF PPROJECTIONS
+
+    public Employee getEmployeeById(Long id){
+        return employeeRepository.findById(id).orElse(null);
+    }
+    public void deleteEmployee(Long id){
+        employeeRepository.deleteById(id);
+    }
+    public Employee saveEmployee(Employee employee){
+        return employeeRepository.save(employee);
+    }
+}
+package com.employeemanagementsystem;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+
+@SpringBootTest
+class EmployeeApplicationTests {
+
+	@Test
+	void contextLoads() {
+	}
+
+}
