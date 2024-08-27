@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CORS Test</title>
+    <script>
+        function testCORS() {
+            fetch('http://localhost:8080/customers', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include' // Include credentials if necessary
+            })
+            .then(response => response.json())
+            .then(data => console.log(data))
+            .catch(error => console.error('CORS error:', error));
+        }
+    </script>
+</head>
+<body>
+    <button onclick="testCORS()">Test CORS</button>
+</body>
+</html>
